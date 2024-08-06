@@ -1,0 +1,22 @@
+<%- include partials/header.ejs %>
+
+<body>
+    <div id="readArea"> <!--Connecting to MetaMask -->
+        <a class="btn btn-success" onclick="connectMetamask()">CONNECT TO METAMASK</button>
+        <p id="userArea">Status: Not connected to Metamask</p>
+         <!-- index html to meta-->
+    </div>
+</body>
+
+
+<script>
+        
+    let account;
+    const connectMetamask = async () => {
+        if(window.ethereum !== "underfined"){
+            const accounts = await ethereum.request({method: "eth_requestAccounts"});
+            account = accounts[0];
+            document.getElementById("userArea").innerHTML = `User Account: ${account}`;
+        }
+    }
+</script>

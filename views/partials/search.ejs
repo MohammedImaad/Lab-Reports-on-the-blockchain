@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Medical Record Lookup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input[type="text"] {
+            width: 300px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .result p {
+            margin: 0;
+            font-size: 16px;
+        }
+        .result strong {
+            color: #4CAF50;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        body {
+            font-family: Arial, sans-serif;
+        }
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        #medicineInfo {
+            margin-top: 20px;
+        }
+        #medicineInfo p {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Blockchain Medical Record Lookup</h1>
+        <form id="medicalRecordForm">
+            <label for="patientAddress">Enter Patient's Ethereum Address:</label>
+            <input type="text" id="patientAddress" name="patientAddress" required>
+            <button type="submit">Lookup</button>
+        </form>
+        <div class="result" id="medicalRecordResult"></div>
+    </div>
+    <form id="medicineForm">
+        <label for="medicineName">Enter Medicine Name:</label>
+        <input type="text" id="medicineName" name="medicineName" required>
+        <button type="submit">Search</button>
+    </form>
+    <div id="medicineInfo" style="display: none;">
+        <h2>Medicine Information</h2>
+        <p id="activeIngredient"></p>
+        <p id="purpose"></p>
+        <p id="warnings"></p>
+        <!-- Add more paragraphs for other information if needed -->
+    </div>
+    
+    <div id="noMedicineFound" style="display: none;">
+        <p>No medicine found for the given name.</p>
+    </div>
+    
+    <div id="errorMessage" style="display: none;">
+        <p>An error occurred while processing your request. Please try again later.</p>
+    </div>
+    <div class="footer">Built by <a href="https://imaadportfolioreal.web.app/">Imaad Thouheed</a></div>
+    <script src="https://cdn.jsdelivr.net/npm/@alch/alchemy-web3@latest/dist/alchemyWeb3.min.js"></script>    <script>
+        document.getElementById('medicalRecordForm').addEventListener('submit', function(event) {
+            try{
+                
+                event.preventDefault();
+                
+                const web3 = AlchemyWeb3.createAlchemyWeb3(
+        "https://eth-sepolia.g.alchemy.com/v2/WrQTrj5qxuyEj4X7OpssQ8yeroucTQgi"
+    )
+                const contractABI =[
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "patient",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "bloodSugarLevel",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "bloodGroup",
+				"type": "string"
+			}
+		],
+		"name": "MedicalRecordAdded",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_name",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_bloodSugarLevel",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "_bloodGroup",
+				"type": "string"
+			}
+		],
+		"name": "addOrUpdateMedicalRecord",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getAllMedicalRecords",
+		"outputs": [
+			{
+				"internalType": "address[]",
+				"name": "",
+				"type": "address[]"
+			},
+			{
+				"internalType": "string[]",
+				"name": "",
+				"type": "string[]"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			},
+			{
+				"internalType": "string[]",
+				"name": "",
+				"type": "string[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_patient",
+				"type": "address"
+			}
+		],
+		"name": "getMedicalRecord",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "medicalRecords",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "bloodSugarLevel",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "bloodGroup",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
+const contractAddress = '0xff4a11cd5d9de1635fc0ed50ef746a3cd4c80df0';
+const privateKey = '3b7d36ddd551d4e17a89fd8f48818a494371dcd3a12972e322ea9378a1e62150';
+
+const account = web3.eth.accounts.privateKeyToAccount(privateKey);
+web3.eth.accounts.wallet.add(account);
+web3.eth.defaultAccount = account.address;
+
+const contract = new web3.eth.Contract(contractABI, contractAddress);
+console.log(patientAddress.value)
+//0x84CB56A7F16D4d2D5070C8F8B08BC98FB241B1f4 Use this address to test the application
+//const result = await contract.methods.getMedicalRecord(patientAddress).call();
+async function fetchMedicalRecord(patientAddress) {
+    try {
+        const result = await contract.methods.getMedicalRecord(patientAddress).call();
+        console.log('Medical record for patient:', result);
+        const medicalRecordResult = document.getElementById('medicalRecordResult');
+        medicalRecordResult.innerHTML = `<p><strong>Name:</strong> ${result[0]}</p>
+                                                     <p><strong>Blood Sugar Level:</strong> ${result[1]}</p>
+                                                     <p><strong>Blood Group:</strong> ${result[2]}</p>`;
+        return result;
+    } catch (error) {
+        console.error('Error getting medical record:', error);
+        throw error; 
+    }
+}
+fetchMedicalRecord(patientAddress.value);
+            }catch (error){
+                console.log(error);
+            }
+            
+
+             
+           
+        });
+        document.getElementById('medicineForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+    const medicineName = document.getElementById('medicineName').value.trim();
+
+    try {
+        const response = await fetch(`https://api.fda.gov/drug/label.json?&search=${encodeURIComponent(medicineName)}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            if (data.results && data.results.length > 0) {
+                const medicineInfo = data.results[0];
+                displayMedicineInfo(medicineInfo);
+            } else {
+                displayNoMedicineFound();
+            }
+        } else {
+            displayErrorMessage(data.error.message);
+        }
+    } catch (error) {
+        displayErrorMessage('An error occurred while processing your request. Please try again later.');
+    }
+    });
+    function displayMedicineInfo(medicineInfo) {
+    document.getElementById('activeIngredient').textContent = `Active Ingredient: ${medicineInfo.active_ingredient}`;
+    document.getElementById('purpose').textContent = `Purpose: ${medicineInfo.purpose}`;
+    document.getElementById('warnings').textContent = `Warnings: ${medicineInfo.warnings}`;
+
+    document.getElementById('medicineInfo').style.display = 'block';
+    document.getElementById('noMedicineFound').style.display = 'none';
+    document.getElementById('errorMessage').style.display = 'none';
+}
+
+function displayNoMedicineFound() {
+    document.getElementById('medicineInfo').style.display = 'none';
+    document.getElementById('noMedicineFound').style.display = 'block';
+    document.getElementById('errorMessage').style.display = 'none';
+}
+
+function displayErrorMessage(message) {
+    document.getElementById('medicineInfo').style.display = 'none';
+    document.getElementById('noMedicineFound').style.display = 'none';
+    document.getElementById('errorMessage').style.display = 'block';
+    document.getElementById('errorMessage').textContent = message;
+}
+    </script>
+</body>
+
+</html>
